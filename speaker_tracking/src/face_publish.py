@@ -19,7 +19,7 @@ print(cap.isOpened())
 bridge=CvBridge()
 pub=rospy.Publisher('/webcam',Float32MultiArray,queue_size=1000)
 rospy.init_node('image',anonymous=False)
-rate=rospy.Rate(100)
+rate=rospy.Rate(30)
 
 homs =[]
 woms = []
@@ -28,6 +28,8 @@ a_r=[]
 a_g=[]
 a_b=[]
 
+
+stats = np.zeros((6,1))
 
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 out = cv2.VideoWriter('output.mp4', fourcc, 30.0, (640,480))
@@ -43,6 +45,8 @@ while not rospy.is_shutdown():
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)
         rects = detector(gray, 1)
+        curr_stat = np.zeros((6,1))
+
         # loop over the face detections
         for (i, rect) in enumerate(rects):
             
@@ -57,9 +61,12 @@ while not rospy.is_shutdown():
             pixels = np.sum(mouth_mask)
             avg_rgb = np.mean(hsv[mouth_mask], axis = 0)
 
-            height = fe.mouth_height(shape, image)
+            height = fe.mouth_height(shape, image)/fe.full_height(shape, image)
             width = fe.mouth_width(shape, image)
+            low_light = np.sum(gray[mouth_mask] < 100)
+            print(low_light)
 
+            disp = fe.get_yaw_pitch(shape, image)
             cv2.imshow('mouth mask', final)
             # Display the landmarks
             # for i, (x, y) in enumerate(shape):
@@ -72,13 +79,17 @@ while not rospy.is_shutdown():
             a_g.append(avg_rgb[1])
             a_b.append(avg_rgb[2])
 
+            curr_stat[:,0] =  np.array([height, width, pixels, avg_rgb[0], avg_rgb[1],low_light]).T
+
+        stats = np.concatenate((stats, curr_stat), axis =1)
+
         out.write(image)
         # Display the image
         im = Image.fromarray(image)
         im.save("your_file.jpeg")
         cv2.putText(img = image, text = 'HOM: {}'.format(height),org = (50,50), fontScale = 2, color = (0,0,255), fontFace = 1)
         cv2.putText(img = image, text = '# PIXELS: {}'.format(pixels),org = (50,70), fontScale = 2, color = (0,0,255), fontFace = 1)
-        cv2.putText(img = image, text = 'AVG RGB: {}, {}, {}'.format(int(avg_rgb[0]),int(avg_rgb[1]), int(avg_rgb[2])),org = (50,80), fontScale = 2, color = (0,0,255), fontFace = 1)
+        cv2.putText(img = image, text = 'AVG LIGHT: {}'.format(int(avg_rgb[1])),org = (50,80), fontScale = 2, color = (0,0,255), fontFace = 1)
 
         
 
@@ -101,5 +112,7 @@ cap.release()
 out.release()
 cv2.destroyAllWindows()
 
-df = pd.DataFrame(list(zip(homs, woms, num_pix, a_r, a_g, a_b)), columns = ['h', 'w', 'num', 'r', 'g','b'])
-df.to_csv('data.csv')
+
+np.save('data.npy', stats)
+# df = pd.DataFrame(list(zip(homs, woms, num_pix, a_r, a_g, a_b)), columns = ['h', 'w', 'num', 'r', 'g','b'])
+# df.to_csv('data.csv')
