@@ -36,11 +36,13 @@ def generate_traj(total_speaking):
    wait = 0
    avg = np.mean(np.array(total_speaking))
    print(avg)
-   if(avg > 0.5 and avg < 0.8):
+   if(avg > 0.4):##and avg < 0.8):
+      #print('YES!')
       # thumbs up position
       traj = [1.48, 0, 1.4, 0.05, -1.6, 0, 0]
       wait = 1
-   elif(avg <=0.5 or avg >=0.8):
+   elif(avg <=0.4 ):#or avg >=0.8):
+      #print('NO!')
       # thumb down position
       traj = [1.48, 0, -1.9, 0.05, -1.6, 0, 0]
 
@@ -63,16 +65,16 @@ def actuate():
    global first
 
 
-   if(len(total_speaking) == 15):
+   if(len(total_speaking) == 10):
       traj, hand, wait= generate_traj(total_speaking)
          
       if(first == True):
-         arm_jtc.add_point(traj,1)
+         arm_jtc.add_point(traj,0.5)
          arm_jtc.start()
         # arm_jtc.wait(1.0)
          #arm_jtc.clear()
 
-         hand_jtc.add_point(hand,1)
+         hand_jtc.add_point(hand,0.5 )
          hand_jtc.start()
          #hand_jtc.wait(0.1)
         # hand_jtc.clear()
@@ -86,12 +88,13 @@ def actuate():
       elif(first == False):
          arm_jtc.add_point(traj,0.5)
          arm_jtc.start()
-         #arm_jtc.wait(0.5)
+         if(wait == 1):
+            arm_jtc.wait(0.4)
          arm_jtc.clear()
 
-         if(wait == 1):
-            rospy.sleep(0.7) #sleep for a few seconds to stabilize
-            print('done ...')
+         # if(wait == 1):
+         #    rospy.sleep(0.4) #sleep for a few seconds to stabilize
+       #  print('done ...')
          total_speaking = []
 
 def callback(data):
@@ -105,9 +108,7 @@ def callback(data):
    result = data.data
    total_speaking.append(result)
    actuate()
-
    
-
 
 if __name__ == '__main__':
 
