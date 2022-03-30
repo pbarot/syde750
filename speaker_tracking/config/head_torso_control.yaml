@@ -1,0 +1,27 @@
+# Position Controllers ---------------------------------------
+torso_controller:
+  type: position_controllers/JointTrajectoryController
+  joint: 
+    - torso_1_joint
+    - torso_2_joint
+  pid: {p: 260, i: 0.0065, d: 1.0}
+head_joint_position_controller:
+  type: position_controllers/JointTrajectoryController
+  joint:  
+    - head_1_joint
+    - head_2_joint
+  pid: {p: 260, i: 0.0065, d: 1.0}
+
+right_arm_controller:
+  type: position_controllers/JointTrajectoryController
+  joints:
+    - arm_right_1_joint
+    - arm_right_2_joint
+    - arm_right_3_joint
+    - arm_right_4_joint
+    - arm_right_5_joint
+    - arm_right_6_joint
+    - arm_right_7_joint
+  stop_trajectory_duration: 0.0
+
+

@@ -28,12 +28,15 @@ predictor = dlib.shape_predictor('/home/stargazer/workspace/catkin_ws/shape_pred
 
 #print(cap.isOpened())
 # bridge=CvBridge()
-pub=rospy.Publisher('/speaker_tracking/speech_signal',Int32,queue_size=1000)
+pub =rospy.Publisher('/speaker_tracking/speech_signal',Int32,queue_size=1000)
+pub_angle =rospy.Publisher('/speaker_tracking/bearing',Int32,queue_size=1000)
+
 rospy.init_node('voice_activity',anonymous=False)
 rate=rospy.Rate(120)
 
 # Configure depth and color streams
 pipeline = rs.pipeline()
+
 config = rs.config()
 
 # Get device product line for setting a supporting resolution
@@ -62,7 +65,10 @@ else:
 
 # Start streaming
 
-pipeline.start(config)
+profile = pipeline.start(config)
+
+depth_sensor = profile.get_device().first_depth_sensor()
+depth_scale = depth_sensor.get_depth_scale()
 
 
 # SET UP FEATS
@@ -102,8 +108,9 @@ try:
         depth_frame = frames_al.get_depth_frame().as_depth_frame()
         color_frame = frames_al.get_color_frame()
 
-        # depth_frame = frames.get_depth_frame()
-        # color_frame = frames.get_color_frame()
+        # for viz
+        # depth_frame_v = frames.get_depth_frame()
+        # color_frame_v = frames.get_color_frame()
         if not depth_frame or not color_frame:
             continue
 
@@ -118,22 +125,30 @@ try:
         color_colormap_dim = color_image.shape
 
         # If depth and color resolutions are different, resize color image to match depth image for display
-        # if depth_colormap_dim != color_colormap_dim:
-        #     resized_color_image = cv2.resize(color_image, dsize=(depth_colormap_dim[1], depth_colormap_dim[0]), interpolation=cv2.INTER_AREA)
-        #     #images = np.hstack((resized_color_image, depth_colormap))
-        #     color = resized_color_image
-        # else:
-        #     #images = np.hstack((color_image, depth_colormap))
-        #     color = color_image
+        if depth_colormap_dim != color_colormap_dim:
+            resized_color_image = cv2.resize(color_image, dsize=(depth_colormap_dim[1], depth_colormap_dim[0]), interpolation=cv2.INTER_AREA)
+            #images = np.hstack((resized_color_image, depth_colormap))
+            color = resized_color_image
+        else:
+            #images = np.hstack((color_image, depth_colormap))
+            color = color_image
 
-        color = color_image
+        #color = color_image
         depth = depth_colormap
         ''' NOW START EXTRACTING FEATURES '''
 
-        image = imutils.resize(color, width = int(320), height = int(240))
-        depth = imutils.resize(depth, width = int(320), height = int(240))
+        image = imutils.resize(color, width = int(320*1.5), height = int(240*1.5))
+        depth = imutils.resize(depth_colormap, width = int(320*1.5), height = int(240*1.5))
+        depth_raw = imutils.resize(depth_image, width = int(320*1.5), height = int(240*1.5))
+
+        # image = color.copy()
+        # depth = depth_colormap.copy()
+        # depth_raw = depth_image.copy()
+
 
         depth = fe.normalize(depth)
+        depth_raw = fe.normalize(depth_raw)
+
 
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)
@@ -169,6 +184,10 @@ try:
             features = np.concatenate((features, current_feat), axis = 1)
 
 
+            y,p = fe.get_yaw_pitch(shape, depth_raw, depth_scale)
+            # if(count % 10==0):
+            #     print(y,p)
+
             if(features.shape[1] == 5 and flag ==0):
                 # base_e = fe.process_npix(total_num_pix, base_e, flag)
                 # base_h = fe.process_heights(total_height, base_h, flag)
@@ -197,8 +216,9 @@ try:
                 #print(np.bitwise_and(np.bitwise_and(curr_e, curr_h), curr_l))
 
                 features = np.zeros((4, 1))
-              #  print(curr_speak[3], curr_speak[4])
+                
                 print(curr_speak)
+
                 # total_num_pix = []
                 # total_height = []
                 # total_lightness = []
@@ -206,14 +226,20 @@ try:
 
         if(flag == 1):
             msg = Int32()
-            if(curr_e !=None):
-                msg.data = curr_speak#np.bitwise_and(curr_h, curr_l)# np.bitwise_and(np.bitwise_and(curr_h, curr_l), curr_l)
-                pub.publish(msg)
+            msg.data = curr_speak#np.bitwise_and(curr_h, curr_l)# np.bitwise_and(np.bitwise_and(curr_h, curr_l), curr_l)
+            pub.publish(msg)
 
-        # Show images
+            angle = Int32()
+            angle.data = int(y)
+            pub_angle.publish(angle)
+
+        
+        #     # Draw the circle to mark the keypoint 
+        #     cv2.circle(image, (shape[30][0], shape[30][1]), 1, (0, 0, 255), -1)
         cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
-        cv2.imshow('RealSense', depth)#np.hstack((image, depth)))
+        cv2.imshow('RealSense', np.hstack((color_image, depth_colormap)))
         cv2.waitKey(1)
+        count = count + 1
 
 finally:
 

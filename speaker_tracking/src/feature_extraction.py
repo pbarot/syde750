@@ -5,12 +5,14 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.path import Path
 import dlib
+import cv2
 from dlib import *
 import cv2
+import math
 
 
-def normalize(signal):
-    return  (signal-np.min(signal))/(np.max(signal)-np.min(signal))
+def normalize(img):
+    return  cv2.normalize(img, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
 
 
 def rect_to_bb(rect):
@@ -152,16 +154,17 @@ def mouth_width(shape, frame):
 	return abs(width)
 
 
-def get_yaw_pitch(shape, frame):
+def get_yaw_pitch(shape, frame, scale):
 	idx = 30
 	h = frame.shape[0]//2
 	w = frame.shape[1]//2
 
-	displacement = (w-shape[idx][0], h-shape[idx][1])
+	x,y = (shape[idx])
+	distance = frame[y,x]/scale
 
-	yaw = displacement[0]*80/640
-	pitch = displacement[1]*50/480
+	displacement = (w-x, h-y)
 
+	yaw = np.arctan(displacement[0]/distance)
+	pitch = np.arctan(displacement[1]/distance)
 
-
-	return yaw, pitch
+	return math.degrees(yaw), math.degrees(pitch)
