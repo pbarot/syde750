@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 syde750
 
 
@@ -23,7 +21,6 @@ two person scenario
 
 *full_demo.launch* - Run single speaker scenario code while launching Gazebo and the custom head/torso controller
 
-=======
 
 *full_func.launch* - Run double speaker scenario while launching custom head/torso controller. Gazebo should be run first before this
 
