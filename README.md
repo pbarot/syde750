@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+syde750
+
 
 ## Humanoids project - Speech Identification and Speaker Tracking on REEM-C
 ### Code breakdown
@@ -18,6 +22,22 @@ two person scenario
 #### Launch files
 
 *full_demo.launch* - Run single speaker scenario code while launching Gazebo and the custom head/torso controller
+
+=======
+
+*full_func.launch* - Run double speaker scenario while launching custom head/torso controller. Gazebo should be run first before this
+
+*head_torso_control.launch* - Run custom head/torso controller, using config from .yaml file
+
+
+#### Custom config
+
+*head_torso_control.yaml* - Config for custom head/torso controller
+
+
+
+#### misc folder: code used to test some functionality, visualize, generate some demo images/save data for visualization later. Includes similar algorithms developed with just webcam
+
 
 *full_func.launch* - Run double speaker scenario while launching custom head/torso controller. Gazebo should be run first before this
 
