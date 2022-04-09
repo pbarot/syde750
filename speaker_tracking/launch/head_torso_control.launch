@@ -5,12 +5,6 @@
 
   <!-- load the controllers -->
   <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
-    output="screen" args="joint_state_controller torso_controller head_controller right_arm_controller right_hand_controller"/>
-
-  <!-- convert joint states to TF transforms for rviz, etc -->
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
-    respawn="false" output="screen">
-    <remap from="/joint_states" to="/reemc/joint_states" />
-  </node>
+    output="screen" args="joint_state_controller torso_controller head_controller right_arm_controller right_hand_controller left_arm_controller left_hand_controller"/>
 
 </launch>

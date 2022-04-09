@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<launch>
+
+  <node pkg="speaker_tracking" type="realsense.py" name="record_node" output="screen" required="true">
+  </node>
+
+  <node pkg="speaker_tracking" type="send_tup_tdown.py" name="speaker" output="screen" required="true">
+  </node>
+
+  <node pkg="speaker_tracking" type="send_head_torso.py" name="tracking" output="screen" required="true">
+  </node>
+
+  
+  <include file = "$(find reemc_gazebo)/launch/reemc_empty_world.launch"> 
+  </include>
+
+  <rosparam file="$(find speaker_tracking)/config/head_torso_control.yaml" command="load"/>
+
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+    output="screen" args="joint_state_controller torso_controller head_controller right_arm_controller right_hand_controller"/>
+
+
+ 
+
+</launch>

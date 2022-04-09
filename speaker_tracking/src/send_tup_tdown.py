@@ -35,14 +35,13 @@ def generate_traj(total_speaking):
    # j = [1.48, 0, -1.9, 0.05, -1.2, 0, 0] for tdown
    wait = 0
    avg = np.mean(np.array(total_speaking))
-   print(avg)
-   if(avg > 0.4):##and avg < 0.8):
-      #print('YES!')
+   if(avg > 0.4 and avg < 0.8):
+      print('YES!')
       # thumbs up position
       traj = [1.48, 0, 1.4, 0.05, -1.6, 0, 0]
       wait = 1
-   elif(avg <=0.4 ):#or avg >=0.8):
-      #print('NO!')
+   elif(avg <=0.4 or avg >=0.8):
+      print('NO!')
       # thumb down position
       traj = [1.48, 0, -1.9, 0.05, -1.6, 0, 0]
 

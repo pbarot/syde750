@@ -2,7 +2,7 @@ import numpy as np
 import argparse
 import imutils
 import pandas as pd 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from matplotlib.path import Path
 import dlib
 import cv2
@@ -40,42 +40,39 @@ def process_features(features, base_vals,flag):
         light_energy = np.sqrt(np.mean(np.array(features[2,:])**2))
         depth_energy = np.sqrt(np.mean(np.array(features[3,:])**2))
 
-        pix = int(pix_energy > base_vals[0]*1.2)
+        pix = int(pix_energy > 	base_vals[0]*1.1)
         height = int(height_energy > base_vals[1]*1.1)
-        light = int(light_energy < base_vals[2]*1.1)
-        depth = int((depth_energy/base_vals[3]) > 1.04)
+        light = int(light_energy < base_vals[2]*1.2)
+        depth = int((depth_energy/base_vals[3]) > 1.002)
 
-        return (np.bitwise_and(np.bitwise_and(pix, height), depth))
-        #return pix, height, light, depth# depth_energy/base_vals[3]
-        #return np.bitwise_and([height, light, depth], [1,1,1])
-
-
-def process_npix(total_num_pix, base_e,flag):
-    if(flag ==0):
-        base_e = np.sqrt(np.mean(np.array(total_num_pix)**2))
-        return base_e
+        return (np.bitwise_and(np.bitwise_and(np.bitwise_and(pix, height), depth), lightness))
     
-    elif(flag ==1):
-        curr_energy = np.sqrt(np.mean(np.array(total_num_pix)**2))
-        return int(curr_energy > base_e*1.3), curr_energy
-
-def process_heights(total_heights, base_h,flag):
-    if(flag ==0):
-        base_h = np.sqrt(np.mean(np.array(total_heights)**2))
-        return base_h
+# def process_npix(total_num_pix, base_e,flag):
+#     if(flag ==0):
+#         base_e = np.sqrt(np.mean(np.array(total_num_pix)**2))
+#         return base_e
     
-    elif(flag ==1):
-        curr_energy = np.sqrt(np.mean(np.array(total_heights)**2))
-        return int(curr_energy > base_h*1.3), curr_energy
+#     elif(flag ==1):
+#         curr_energy = np.sqrt(np.mean(np.array(total_num_pix)**2))
+#         return int(curr_energy > base_e*1.3), curr_energy
 
-def process_lightness(total_lightness, base_l,flag):
-    if(flag ==0):
-        base_l = np.sqrt(np.mean(np.array(total_lightness)**2))
-        return base_l
+# def process_heights(total_heights, base_h,flag):
+#     if(flag ==0):
+#         base_h = np.sqrt(np.mean(np.array(total_heights)**2))
+#         return base_h
     
-    elif(flag ==1):
-        curr_energy = np.sqrt(np.mean(np.array(total_lightness)**2))
-        return int(curr_energy < base_l*1.1), curr_energy
+#     elif(flag ==1):
+#         curr_energy = np.sqrt(np.mean(np.array(total_heights)**2))
+#         return int(curr_energy > base_h*1.3), curr_energy
+
+# def process_lightness(total_lightness, base_l,flag):
+#     if(flag ==0):
+#         base_l = np.sqrt(np.mean(np.array(total_lightness)**2))
+#         return base_l
+    
+#     elif(flag ==1):
+#         curr_energy = np.sqrt(np.mean(np.array(total_lightness)**2))
+#         return int(curr_energy < base_l*1.1), curr_energy
 
 def shape_to_np(shape, dtype="int"):
 	coords = np.zeros((68, 2), dtype=dtype)
@@ -103,7 +100,7 @@ def mouth(shape, frame):
 	return grid
 
 def lower_face(shape, frame):
-	idx = [5,6,7,8,9,10,11,55,56,57,58,59]
+	idx = [2,3,4,5,6,7,8,9,10,11,12,13,14,64, 55,56,57,58,59, 48]
 
 	verts =shape[idx]
 	verts = [(x,y) for x,y in verts]
@@ -155,12 +152,14 @@ def mouth_width(shape, frame):
 
 
 def get_yaw_pitch(shape, frame, scale):
-	idx = 30
+	idx = list(range(0,16))
+	idx.extend([17,18,19,20,21,22,23,24,25,26])
+
 	h = frame.shape[0]//2
 	w = frame.shape[1]//2
 
-	x,y = (shape[idx])
-	distance = frame[y,x]/scale
+	x,y = (np.mean(shape[idx], axis = 0))
+	distance = frame[int(y),int(x)]/scale
 
 	displacement = (w-x, h-y)
 

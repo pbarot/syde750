@@ -1,29 +1,36 @@
-# syde750
-Humanoids project - Speech Identification As Reflected by Robotic Actuation
 
-## Task breakdown
-1. ROS based infrastructure to capture camera feed, apply DLIB (or a relevant facial detector) and publish the extracted landmarks and coordinates to a ROS topic 
+## Humanoids project - Speech Identification and Speaker Tracking on REEM-C
+### Code breakdown
 
-2. Either find or generate our own dataset of speech/no speech given a video of a single speaker. It should include many periods of naturally waiting and watching the camera, and periods of 
-utterances/sentences of a few seconds long
+#### Vision functionality and ROS Interfacing
 
-3. Develop a signal processing approach to classify mouth opening distance signals as 1 (speech) or 0 (no speech). Most likely based on breaking signals into frames and classifying each one
-Consider
+*class_face.py* - Class for faces to compute their own metrics and process features, required results and establish own thresholds
 
-- Significant RMS/Power changes in the input frames
+*feature_extraction.py* - A set of numerous utilities to generate required features, process images and estimate presence of speech
 
-- Rate of change in input frames
+*two_person_case.py* - Interfacing with RealSense to generate depth and colour stream, identify faces, predict individual speech presence and publish relevant yaw angles and classification results to ROS network
 
-- Normalizing by length of the face to account for speaker's distance to camera
+*send_head_torso.py* - Subscribe to published yaw angle and convert to required head and torso yaw angles given previous yaw angle
 
-4. Publish this binary signal on the network. Allow for a joint trajectory controller to receive this message and activate the thumbs up/down state
+*send_tup_tdown.py* - Subscribe to published speech identification signal and add trajectories for corresponding thumb gesture. *send_double_t.py* handles this for both arms in the 
+two person scenario
 
-5. Design actuations to achieve the thumbs up/down state 
+#### Launch files
 
-6. Use one facial landmark to estimate yaw and pitch required to center the speaker's face. Send these estimates to the head and torso (more on this later)
+*full_demo.launch* - Run single speaker scenario code while launching Gazebo and the custom head/torso controller
+
+*full_func.launch* - Run double speaker scenario while launching custom head/torso controller. Gazebo should be run first before this
+
+*head_torso_control.launch* - Run custom head/torso controller, using config from .yaml file
+
+
+#### Custom config
+
+*head_torso_control.yaml* - Config for custom head/torso controller
+
+
+#### misc folder: code used to test some functionality, visualize, generate some demo images/save data for visualization later. Includes similar algorithms developed with just webcam
+#### includes algo_exp.html where some initial exploration and algorithm development was performed
 
 
 
-## Relevant docs/links
-
-- Auditory and Visual Speech Relationships https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1000436
